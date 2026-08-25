@@ -41,4 +41,27 @@ print(vendas)
 produtos_por_id = {}
 for produto in produtos:
     produtos_por_id[produto["id"]] = produto
-    print(produtos_por_id)
+
+
+print(produtos_por_id)
+
+def faturamento_categoria(vendas, produtos_por_id):
+    faturamento = {}
+
+    for venda in vendas:
+        produto = produtos_por_id[venda["produto"]]
+        categoria = produto["categoria"]
+
+        if categoria not in faturamento:
+            faturamento[categoria] = 0
+
+        faturamento[categoria] += venda["valor_total"]
+
+    return faturamento
+
+resultado = faturamento_categoria(vendas, produtos_por_id)
+
+print("\n -- Faturamento Por Categoria -- ")
+
+for categoria, valor in resultado.items():
+    print(f"{categoria}: R$ {valor:.2f}")
