@@ -12,7 +12,7 @@ with open("dados/produtos.csv", "r", encoding="utf-8") as arquivo:
             "id": linha[0],
             "nome": linha[1],
             "categoria": linha[2],
-            "preco": float(linha[3],)
+            "preco": float(linha[3])
             
         }
         produtos.append(produto)
@@ -37,3 +37,8 @@ with open("dados/vendas.csv", "r", encoding="utf-8") as arquivo:
         }
         vendas.append(venda)
 print(vendas)
+
+produtos_por_id = {}
+for produto in produtos:
+    produtos_por_id[produto["id"]] = produto
+    print(produtos_por_id)
