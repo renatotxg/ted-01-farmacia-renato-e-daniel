@@ -16,7 +16,6 @@ with open("dados/produtos.csv", "r", encoding="utf-8") as arquivo:
             
         }
         produtos.append(produto)
-print(produtos)
 
 
 vendas = []
@@ -36,14 +35,12 @@ with open("dados/vendas.csv", "r", encoding="utf-8") as arquivo:
             "canal": linha[5]
         }
         vendas.append(venda)
-print(vendas)
+
 
 produtos_por_id = {}
 for produto in produtos:
     produtos_por_id[produto["id"]] = produto
 
-
-print(produtos_por_id)
 
 def faturamento_categoria(vendas, produtos_por_id):
     faturamento = {}
@@ -66,7 +63,7 @@ print("\n -- Faturamento Por Categoria -- ")
 for categoria, valor in resultado.items():
     print(f"{categoria}: R$ {valor:.2f}")
 
-def produtosmais_vendidos(vendas, produtos_por_id):
+def produtos_mais_vendidos(vendas, produtos_por_id):
     quantidade_produtos = {}
 
     for venda in vendas:
@@ -80,7 +77,7 @@ def produtosmais_vendidos(vendas, produtos_por_id):
 
     return quantidade_produtos
 
-resultado_produtos = produtosmais_vendidos(vendas, produtos_por_id)
+resultado_produtos = produtos_mais_vendidos(vendas, produtos_por_id)
 
 print("\n -- Produtos Mais Vendidos --")
 
@@ -88,7 +85,7 @@ for id_produto, quantidade in resultado_produtos.items():
     nome = produtos_por_id[id_produto]["nome"]
     print(f"{nome}: {quantidade} unidades")
 
-def produtosmais_vendidos(vendas, produtos_por_id):
+def produto_mais_vendido(vendas, produtos_por_id):
     quantidade_por_produto = {}
 
     for venda in vendas:
@@ -110,10 +107,80 @@ def produtosmais_vendidos(vendas, produtos_por_id):
 
     return nome_produto, quantidade_vendida
 
-produto, quantidade = produtosmais_vendidos(vendas, produtos_por_id)
+produto, quantidade = produto_mais_vendido(vendas, produtos_por_id)
 
 print('\n -- Produto Mais Vendido --')
 print(f"{produto}: {quantidade} unidades vendidas")
 
 
+# conjunto de clientes unicos
+clientes_unicos = set()
 
+for venda in vendas:
+    clientes_unicos.add(venda["cliente"])
+
+print("\n -- Clientes Únicos -- ")
+print(f"Quantidade de clientes diferentes: {len(clientes_unicos)}")
+print(clientes_unicos)
+
+
+#Operacao com conjuntos
+clientes_balcao = {
+    venda["cliente"]
+    for venda in vendas
+    if venda["canal"] == "Balcão"
+
+}
+
+clientes_delivery_set = {
+    venda["cliente"]
+    for venda in vendas
+    if venda["canal"] == "Delivery"
+}
+
+
+clientes_ambos = clientes_balcao.intersection(clientes_delivery_set)
+
+print("\n -- Clientes Que Compraram Nos Dois Canais -- ")
+print(clientes_ambos)
+#List Comprehension
+produtos_caros = [
+    produto["nome"]
+    for produto in produtos
+    if produto["preco"] > 30
+]
+
+print("\n -- Produtos acima de R$ 30 --")
+
+for produto in produtos_caros:
+    print(produto)
+
+# Segunda List COmprehension
+vendas_delivery = [
+    venda
+    for venda in vendas
+    if venda["canal"] == "Delivery"
+]
+
+print("\n -- Vendas Realizadas Por Delivery -- ")
+print(f"Quantidade De Vendas: {len(vendas_delivery)}")
+
+# Dictionary Comprehension
+
+precos_produtos = {
+    produto["nome"]: produto["preco"]
+    for produto in produtos
+}
+
+print("\n -- Preços Dos Produtos -- ")
+
+for nome, preco in precos_produtos.items():
+    print(f"{nome}: R$ {preco:.2f}")
+
+# Tupla com os canais de venda
+canais_venda = ("Balcão", "Delivery")
+
+print("\n -- Canais De Venda -- ")
+
+for canal in canais_venda:
+    print(canal)
