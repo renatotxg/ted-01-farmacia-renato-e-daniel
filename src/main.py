@@ -4,185 +4,183 @@ produtos = []
 
 with open("dados/produtos.csv", "r", encoding="utf-8") as arquivo:
     leitor = csv.reader(arquivo)
+
     next(leitor)
 
     for linha in leitor:
-        produtos.append({
+        produto = {
             "id": linha[0],
             "nome": linha[1],
             "categoria": linha[2],
             "preco": float(linha[3])
-        })
+            
+        }
+        produtos.append(produto)
 
 
 vendas = []
 
 with open("dados/vendas.csv", "r", encoding="utf-8") as arquivo:
     leitor = csv.reader(arquivo)
+
     next(leitor)
 
     for linha in leitor:
-        vendas.append({
+        venda = {
             "id": linha[0],
             "cliente": linha[1],
             "produto": linha[2],
             "quantidade": int(linha[3]),
             "valor_total": float(linha[4]),
             "canal": linha[5]
-        })
+        }
+        vendas.append(venda)
 
 
-produtos_id = {}
-
+produtos_por_id = {}
 for produto in produtos:
-    produtos_id[produto["id"]] = produto
+    produtos_por_id[produto["id"]] = produto
 
 
-def faturamento_categoria(vendas):
-    resultado = {}
+def faturamento_categoria(vendas, produtos_por_id):
+    faturamento = {}
+
+    for venda in vendas:
+        produto = produtos_por_id[venda["produto"]]
+        categoria = produto["categoria"]
+
+        if categoria not in faturamento:
+            faturamento[categoria] = 0
+
+        faturamento[categoria] += venda["valor_total"]
+
+    return faturamento
+
+resultado = faturamento_categoria(vendas, produtos_por_id)
+
+print("\n -- Faturamento Por Categoria -- ")
+
+for categoria, valor in resultado.items():
+    print(f"{categoria}: R$ {valor:.2f}")
+
+def produtos_mais_vendidos(vendas, produtos_por_id):
+    quantidade_produtos = {}
 
     for venda in vendas:
         id_produto = venda["produto"]
-        categoria = produtos_id[id_produto]["categoria"]
+        quantidade = venda["quantidade"]
 
-        if categoria not in resultado:
-            resultado[categoria] = 0
+        if id_produto not in quantidade_produtos:
+            quantidade_produtos[id_produto] = 0
 
-        resultado[categoria] = resultado[categoria] + venda["valor_total"]
+        quantidade_produtos[id_produto] += quantidade
 
-    return resultado
+    return quantidade_produtos
 
+resultado_produtos = produtos_mais_vendidos(vendas, produtos_por_id)
 
-resultado = faturamento_categoria(vendas)
+print("\n -- Produtos Mais Vendidos --")
 
-print("\n-- Faturamento Por Categoria --")
+for id_produto, quantidade in resultado_produtos.items():
+    nome = produtos_por_id[id_produto]["nome"]
+    print(f"{nome}: {quantidade} unidades")
 
-for categoria in resultado:
-    print(categoria, ": R$", format(resultado[categoria], ".2f"))
-
-
-def produtos_vendidos(vendas):
-    quantidade = {}
-
-    for venda in vendas:
-        id_produto = venda["produto"]
-
-        if id_produto not in quantidade:
-            quantidade[id_produto] = 0
-
-        quantidade[id_produto] = quantidade[id_produto] + venda["quantidade"]
-
-    return quantidade
-
-
-resultado = produtos_vendidos(vendas)
-
-print("\n-- Produtos Mais Vendidos --")
-
-for id_produto in resultado:
-    nome = produtos_id[id_produto]["nome"]
-    print(nome, ":", resultado[id_produto], "unidades")
-
-
-def produto_mais_vendido(vendas):
-    quantidade = {}
+def produto_mais_vendido(vendas, produtos_por_id):
+    quantidade_por_produto = {}
 
     for venda in vendas:
-        id_produto = venda["produto"]
+        produto_id = venda["produto"]
+        quantidade = venda["quantidade"]
 
-        if id_produto not in quantidade:
-            quantidade[id_produto] = 0
+        if produto_id in quantidade_por_produto:
+            quantidade_por_produto[produto_id] += quantidade
+        else:
+            quantidade_por_produto[produto_id] = quantidade
 
-        quantidade[id_produto] += venda["quantidade"]
+    produto_id_mais_vendido = max(
+        quantidade_por_produto,
+        key=quantidade_por_produto.get
+    )
 
-    maior = 0
-    produto_maior = ""
+    nome_produto = produtos_por_id[produto_id_mais_vendido]["nome"]
+    quantidade_vendida = quantidade_por_produto[produto_id_mais_vendido]
 
-    for id_produto in quantidade:
-        if quantidade[id_produto] > maior:
-            maior = quantidade[id_produto]
-            produto_maior = id_produto
+    return nome_produto, quantidade_vendida
 
-    return produto_maior, maior
+produto, quantidade = produto_mais_vendido(vendas, produtos_por_id)
 
-
-id_produto, quantidade = produto_mais_vendido(vendas)
-
-print("\n-- Produto Mais Vendido --")
-print(produtos_id[id_produto]["nome"], ":", quantidade, "unidades vendidas")
+print('\n -- Produto Mais Vendido --')
+print(f"{produto}: {quantidade} unidades vendidas")
 
 
-# clientes diferentes
-clientes = set()
+# conjunto de clientes unicos
+clientes_unicos = set()
 
 for venda in vendas:
-    clientes.add(venda["cliente"])
+    clientes_unicos.add(venda["cliente"])
 
-print("\n-- Clientes Únicos --")
-print("Quantidade de clientes diferentes:", len(clientes))
-print(clientes)
+print("\n -- Clientes Únicos -- ")
+print(f"Quantidade de clientes diferentes: {len(clientes_unicos)}")
+print(clientes_unicos)
 
 
-# clientes do balcao
+#Operacao com conjuntos
 clientes_balcao = {
     venda["cliente"]
     for venda in vendas
     if venda["canal"] == "Balcão"
+
 }
 
-# clientes do delivery
-clientes_delivery = {
+clientes_delivery_set = {
     venda["cliente"]
     for venda in vendas
     if venda["canal"] == "Delivery"
 }
 
-clientes_dois_canais = clientes_balcao.intersection(clientes_delivery)
 
-print("\n-- Clientes Que Compraram Nos Dois Canais --")
-print(clientes_dois_canais)
+clientes_ambos = clientes_balcao.intersection(clientes_delivery_set)
 
-
-# produtos com preço maior que 30
+print("\n -- Clientes Que Compraram Nos Dois Canais -- ")
+print(clientes_ambos)
+#List Comprehension
 produtos_caros = [
     produto["nome"]
     for produto in produtos
     if produto["preco"] > 30
 ]
 
-print("\n-- Produtos acima de R$ 30 --")
+print("\n -- Produtos acima de R$ 30 --")
 
-for nome in produtos_caros:
-    print(nome)
+for produto in produtos_caros:
+    print(produto)
 
-
-# vendas delivery
+# Segunda List COmprehension
 vendas_delivery = [
     venda
     for venda in vendas
     if venda["canal"] == "Delivery"
 ]
 
-print("\n-- Vendas Realizadas Por Delivery --")
-print("Quantidade de vendas:", len(vendas_delivery))
+print("\n -- Vendas Realizadas Por Delivery -- ")
+print(f"Quantidade De Vendas: {len(vendas_delivery)}")
 
+# Dictionary Comprehension
 
-# preços dos produtos
-precos = {
+precos_produtos = {
     produto["nome"]: produto["preco"]
     for produto in produtos
 }
 
-print("\n-- Preços Dos Produtos --")
+print("\n -- Preços Dos Produtos -- ")
 
-for nome in precos:
-    print(nome, ": R$", format(precos[nome], ".2f"))
+for nome, preco in precos_produtos.items():
+    print(f"{nome}: R$ {preco:.2f}")
 
+# Tupla com os canais de venda
+canais_venda = ("Balcão", "Delivery")
 
-# tupla
-canais = ("Balcão", "Delivery")
+print("\n -- Canais De Venda -- ")
 
-print("\n-- Canais De Venda --")
-
-for canal in canais:
+for canal in canais_venda:
     print(canal)
